@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <ui:remove>
+        <h:form>
+            <h:commandButton actionListener="#{openid.login}" value="Login" id="openid" image="http://cdn.steamcommunity.com/public/images/signinthroughsteam/sits_large_border.png" />
+        </h:form>
+        </ui:remove>
+        <h:form>
+            <h:outputText value="displayname: " />
+            <h:inputText value="#{loginMB.displayName}" />
+            <h:outputText value="password: " />
+            <h:inputSecret value="#{loginMB.password}" />
+            
+            <h:selectBooleanCheckbox value="#{loginMB.rememberMe}" >
+                Remember Me
+            </h:selectBooleanCheckbox>
+            
+            <h:commandButton value="Login" action="#{loginMB.login}" />
+        </h:form>
+    </h:body>
+</html>

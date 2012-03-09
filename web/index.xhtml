@@ -1,0 +1,162 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ror="http://richfaces.org/rich"
+      xmlns:roa="http://richfaces.org/a4j"
+      xmlns:f="http://java.sun.com/jsf/core">
+    <h:head>
+        <title>DOTA INHOUSE</title>
+    </h:head>
+    <h:body>
+        
+        <ror:notifyMessages globalOnly="true" />
+        <h:form>
+            <h:commandButton value="logout" action="#{loginMB.logout}" />
+        </h:form>
+
+        <h:outputText value="INHOUSE" style="font-weight: bold; font-size: 40px;" />
+        <h:form>
+            <roa:poll render="fecha_actual" interval="1000" />
+            <h:outputText id="fecha_actual" value="#{inhouseApp.currentDate}">
+                <f:convertDateTime pattern="dd/MM/yyyy HH:mm a" timeZone="America/Santiago" />
+            </h:outputText>
+        </h:form>
+        <h:form>
+            <ror:list id="user_list" value="#{inhouseApp.currentUsers}" var="user">
+                <h:outputText value="#{user.displayName}" /> - <roa:commandButton value="Challenge!" action="#{userMB.challenge(user)}" />
+            </ror:list>
+        </h:form>
+
+        <roa:push address="DEFAULT_TOPIC" ondataavailable="jQuery('&lt;li /&gt;').prependTo('#messages').text(event.rf.data)">
+            <roa:ajax event="dataavailable" render="chall_games sign_games pick_games play_games" />
+        </roa:push>
+
+        <roa:push address="CURRENT_USERS_TOPIC" ondataavailable="jQuery('&lt;li /&gt;').prependTo('#messages').text(event.rf.data)">
+            <roa:ajax event="dataavailable" render="user_list" />
+        </roa:push>
+        
+        <roa:push address="CHAT_TOPIC" ondataavailable="jQuery('&lt;li /&gt;').prependTo('#messages').text(event.rf.data).css('color', 'blue')" />
+
+        <h:form>
+            <ror:panel header="GAMES CHALLENGE PHASE">
+                <ror:dataGrid id="chall_games" value="#{inhouseApp.challengePhaseGames}" var="game">
+                    <ror:panel header="Game ##{game.id}" >
+                        
+                        <h:panelGrid columns="2">
+                            <h:outputText value="Captain A: " style="font-weight: bold;" />
+                            <h:outputText value="#{game.captainA.displayName}" />                            
+                            <h:outputText value="Captain B: " style="font-weight: bold;" />
+                            <h:outputText value="#{game.captainB.displayName}" />                            
+                        </h:panelGrid>
+                        
+                        <roa:commandButton value="Accept" action="#{userMB.acceptChallenge}" disabled="#{!(userMB.user eq game.captainB)}" />
+                        <roa:commandButton value="Reject" action="#{userMB.rejectChallenge}" disabled="#{!(userMB.user eq game.captainA or userMB.user eq game.captainB)}"/>
+                    </ror:panel>
+                </ror:dataGrid>
+            </ror:panel>
+        </h:form>
+
+        <h:form>
+            <ror:panel header="GAMES SIGN PHASE">
+                <ror:dataGrid id="sign_games" value="#{inhouseApp.signPhaseGames}" var="game">
+                    <ror:panel header="Game ##{game.id}" >
+                        
+                        <h:panelGrid columns="3">
+                            
+                            <ror:dataGrid columns="1" value="#{game.teamA}" var="user">
+                                <f:facet name="header">Team A</f:facet>
+                                <h:outputText value="#{user.displayName}" />
+                            </ror:dataGrid>  
+
+                            <ror:dataGrid columns="1" value="#{game.teamB}" var="user">
+                                <f:facet name="header">Team B</f:facet>
+                                <h:outputText value="#{user.displayName}" />
+                            </ror:dataGrid>
+
+                            <ror:dataGrid columns="1" value="#{game.pool}" var="user">
+                                <f:facet name="header">Pool</f:facet>
+                                <h:outputText value="#{user.displayName}" />
+                            </ror:dataGrid>
+
+                        </h:panelGrid>                        
+                            <roa:commandButton value="Sign" action="#{userMB.sign(game)}" disabled="#{!(!(userMB.user eq game.captainA) and !(userMB.user eq game.captainB) or !game.pool.contains(userMB.user))}" />                            
+                            <roa:commandButton value="Out" action="#{userMB.out}" disabled="#{!(game.pool.contains(userMB.user))}" />
+                            <roa:commandButton value="Ready" action="#{userMB.ready}" disabled="#{!(userMB.user eq game.captainA or userMB.user eq game.captainB)}" />
+                    </ror:panel>
+                </ror:dataGrid>
+            </ror:panel>
+        </h:form>
+        
+        <h:form>
+            <ror:panel header="GAMES PICK PHASE">
+                <ror:dataGrid id="pick_games" value="#{inhouseApp.pickingPhaseGames}" var="game">
+                    <ror:panel header="Game ##{game.id}" >
+                       
+                        <h:panelGrid columns="3">
+
+                            <ror:dataGrid columns="1" value="#{game.teamA}" var="user">
+                                <f:facet name="header">Team A</f:facet>
+                                <h:outputText value="#{user.displayName}" />
+                            </ror:dataGrid>  
+
+                            <ror:dataGrid columns="1" value="#{game.teamB}" var="user">
+                                <f:facet name="header">Team B</f:facet>
+                                <h:outputText value="#{user.displayName}" />
+                            </ror:dataGrid>
+
+                            <ror:dataGrid columns="1" value="#{game.pool}" var="user">
+                                <f:facet name="header">Pool</f:facet>
+                                <h:outputText value="#{user.displayName}" /> - <roa:commandButton value="Pick" action="#{userMB.pick(user)}" disabled="#{!(game.captainA eq userMB.user or game.captainB eq userMB.user)}" />
+                            </ror:dataGrid>
+
+                        </h:panelGrid>
+                        
+                    </ror:panel>
+                </ror:dataGrid>
+
+            </ror:panel>
+        </h:form>
+        
+        <h:form>
+            <ror:panel header="GAMES PLAY PHASE">
+                <ror:dataGrid id="play_games" value="#{inhouseApp.playingPhaseGames}" var="game">
+                    <ror:panel header="Game ##{game.id}" >
+                        <h:panelGrid columns="3">
+
+                            <ror:dataGrid columns="1" value="#{game.teamA}" var="user">
+                                <f:facet name="header">Team A</f:facet>
+                                <h:outputText value="#{user.displayName}" />
+                            </ror:dataGrid>  
+
+                            <ror:dataGrid columns="1" value="#{game.teamB}" var="user">
+                                <f:facet name="header">Team B</f:facet>
+                                <h:outputText value="#{user.displayName}" />
+                            </ror:dataGrid>
+
+                        </h:panelGrid>
+                                                
+                        <roa:commandButton value="Concede" action="#{userMB.concedeGame}" disabled="#{!(game.teamA.contains(userMB.user) or game.teamB.contains(userMB.user))}" />
+                    </ror:panel>
+                </ror:dataGrid>
+            </ror:panel>
+        </h:form>
+        
+        
+        <ror:panel>
+            <f:facet name="header">CHAT</f:facet> 
+            <h:form>
+                <h:inputText styleClass="message" size="200" value="#{userMB.msg}" id="msg" label="msg">
+                    <f:validateLength minimum="1" maximum="200" />
+                    <f:validateRequired />
+                    <ror:validator />
+                </h:inputText>   
+                <roa:commandButton value="Send" action="#{userMB.sendMessage}" oncomplete="jQuery('.message').val('').focus()" />
+                <ror:message for="name" />
+            </h:form>
+            <ul id="messages" style="height: 400px; overflow: auto;" />                           
+        </ror:panel>
+        
+
+    </h:body>
+</html>
